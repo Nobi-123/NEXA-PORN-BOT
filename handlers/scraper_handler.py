@@ -13,13 +13,11 @@ def register_scraper(app):
         """
 
         # Determine category from channel
-        chat_id = str(message.chat.username or message.chat.id)
-        category = SOURCE_CHANNELS.get(chat_id) or SOURCE_CHANNELS.get(str(message.chat.id))
+        chat_id = str(message.chat.id)
+        category = SOURCE_CHANNELS.get(chat_id)
         if not category:
-            for k, v in SOURCE_CHANNELS.items():
-                if str(k) == str(message.chat.id):
-                    category = v
-                    break
+            # fallback if somehow chat_id is missing
+            category = "unknown"
 
         # Extract video details
         file_id = message.video.file_id
@@ -30,10 +28,14 @@ def register_scraper(app):
         if not exists:
             videos.insert_one({
                 "file_id": file_id,
-                "category": category or "unknown",
+                "category": category,
                 "title": title,
                 "source_id": message.chat.id,
                 "message_id": message.message_id,
                 "added_at": message.date
             })
-            log_event(f"Indexed video from channel {message.chat.id} (msg {message.message_id}) -> category: {category}", client)
+            # Async logger must be awaited
+            await log_event(
+                f"Indexed video from channel {message.chat.id} (msg {message.message_id}) -> category: {category}",
+                client
+            )
