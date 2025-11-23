@@ -9,9 +9,10 @@ referrals = db["referrals"]
 videos = db["videos"]
 bot_logs = db["bot_logs"]
 limits = db["limits"]
+watches = db["watches"]  # <--- Added
 
 # Indexes
-# _id is already unique, no need for unique=True
 users.create_index([("_id", ASCENDING)])
 videos.create_index([("file_id", ASCENDING)], unique=True)
 limits.create_index([("_id", ASCENDING)])
+watches.create_index([("_id", ASCENDING)])
