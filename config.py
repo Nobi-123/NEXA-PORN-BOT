@@ -14,6 +14,8 @@ MONGO_URL = os.getenv("MONGO_URL", "mongodb+srv://SickNessRoBot:Sickness@sicknes
 # ---------------- Bot Owners ----------------
 OWNER_IDS = list(map(int, os.getenv("OWNER_IDS", "").split(",")))
 
+MEDIA_CHANNEL = "@MEDIAxNEXA"  # Bot-owned channel to store videos
+
 # ---------------- Log Channel ----------------
 LOG_CHANNEL = os.getenv("LOG_CHANNEL", "-1003313190368")  # Optional, channel to log user events
 
