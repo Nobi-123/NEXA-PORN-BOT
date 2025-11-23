@@ -12,8 +12,9 @@ watches = db["watches"]       # Tracks videos watched per user
 referrals = db["referrals"]   # Tracks referrals
 bot_logs = db["bot_logs"]     # Logs events
 
-# Indexes for faster queries
-users.create_index([("_id", ASCENDING)], unique=True)
+# Indexes
+# _id is already unique by default, no need for unique=True
+users.create_index([("_id", ASCENDING)])  
 videos.create_index([("source_id", ASCENDING), ("message_id", ASCENDING)], unique=True)
 watches.create_index([("user_id", ASCENDING), ("watched_at", ASCENDING)])
 referrals.create_index([("referrer_id", ASCENDING), ("referred_id", ASCENDING)])
