@@ -1,0 +1,45 @@
+{
+  "name": "porn-telegram-bot",
+  "description": "Telegram bot that sends anime videos with categories, daily limits, and referral bonuses.",
+  "repository": "https://github.com/yourusername/anime-telegram-bot",
+  "logo": "https://telegra.ph/file/abcd1234efgh5678.png",
+  "keywords": ["telegram", "bot", "anime", "pyrogram", "mongodb"],
+  "stack": "heroku-20",
+  "env": {
+    "BOT_TOKEN": {
+      "description": "Your Telegram bot token",
+      "required": true
+    },
+    "API_ID": {
+      "description": "Your Telegram API ID",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Your Telegram API Hash",
+      "required": true
+    },
+    "MONGO_URL": {
+      "description": "MongoDB connection URI",
+      "required": true
+    },
+    "OWNER_IDS": {
+      "description": "Comma-separated Telegram user IDs of bot owners/admins",
+      "required": true
+    },
+    "LOG_CHANNEL": {
+      "description": "Optional: Telegram channel ID to log bot events",
+      "required": false
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "standard-1X"
+    }
+  }
+}
