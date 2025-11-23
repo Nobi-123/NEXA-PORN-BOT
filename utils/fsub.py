@@ -1,22 +1,17 @@
-from pyrogram.errors import UserNotParticipant, BadRequest
-from config import FORCE_CHANNELS
+from pyrogram.errors import UserNotParticipant
 
-async def check_sub(client, user_id):
+async def check_sub(client, user_id, channels):
     """
-    Checks if the user has joined all required channels
-    Returns True if joined, otherwise returns the channel they haven't joined
+    Check if a user joined all mandatory channels.
+    Returns True if joined all, False otherwise.
     """
-    for ch in FORCE_CHANNELS:
-        if not ch:
-            continue
+    for ch in channels:
         try:
-            mem = await client.get_chat_member(int(ch), user_id)
-            if mem.status in ("kicked",):
-                return ch
+            member = await client.get_chat_member(ch, user_id)
+            if member.status in ["kicked", "left"]:
+                return False
         except UserNotParticipant:
-            return ch
-        except BadRequest:
-            return ch
+            return False
         except Exception:
-            return ch
+            return False
     return True
