@@ -42,9 +42,9 @@ FORCE_CHANNELS = [
 
 # SOURCE_CHANNELS: channel username/id -> category name mapping
 SOURCE_CHANNELS = {
-    "-1003230238714": "hentai",
-    "-1003494008640": "japanese",
-    "-1003365806689": "russian",
-    "-1003450553119": "indian",
-    "-1003236339201": "african"
+    "NEXAxHENTAI": "hentai",
+    "NEXAxJAPANESE": "japanese",
+    "NEXAxRUSSIAN": "russian",
+    "NEXAxINDIAN": "indian",
+    "NEXAxAFRICAN": "african"
 }
