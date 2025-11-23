@@ -12,7 +12,7 @@ API_HASH = os.getenv("API_HASH", "231c18ea7273824491d6bf05425ab74e")
 MONGO_URL = os.getenv("MONGO_URL", "mongodb+srv://SickNessRoBot:Sickness@sickness.qxwkdjl.mongodb.net/?appName=Sickness")
 
 # ---------------- Bot Owners ----------------
-OWNER_IDS = list(map(int, os.getenv("OWNER_IDS", "8315954262", "8449801101", "8158050474", "8188588913").split(",")))
+OWNER_IDS = list(map(int, os.getenv("OWNER_IDS", "").split(",")))
 
 # ---------------- Log Channel ----------------
 LOG_CHANNEL = os.getenv("LOG_CHANNEL", "-1003313190368")  # Optional, channel to log user events
