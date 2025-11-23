@@ -11,7 +11,7 @@ def register_video(app):
         data = callback.data
         uid = callback.from_user.id
 
-        # Show category menu
+        # ---------------- Show category menu ----------------
         if data == "menu_categories":
             await callback.message.reply_text(
                 "🎬 Choose a category:",
@@ -20,7 +20,7 @@ def register_video(app):
             await callback.answer()
             return
 
-        # Handle category selection
+        # ---------------- Handle category selection ----------------
         if data and data.startswith("cat_"):
             category = data.split("_", 1)[1]
 
@@ -53,7 +53,7 @@ def register_video(app):
                 await callback.answer("⚠️ Could not consume your quota.", show_alert=True)
                 return
 
-            # Send video
+            # ---------------- Send video ----------------
             try:
                 await client.send_video(
                     chat_id=uid,
@@ -61,7 +61,14 @@ def register_video(app):
                     caption=video.get("title", ""),
                 )
                 await callback.answer("✅ Enjoy your video!")
-                log_event(f"User {uid} watched video {video.get('_id')} ({video.get('category')})", client)
+                # Await async logger
+                await log_event(
+                    f"User {uid} watched video {video.get('_id')} ({video.get('category')})",
+                    client
+                )
             except Exception as e:
                 await callback.answer("⚠️ Failed to send video.", show_alert=True)
-                log_event(f"Failed to send video {video.get('_id')} to {uid}: {e}", client)
+                await log_event(
+                    f"Failed to send video {video.get('_id')} to {uid}: {e}",
+                    client
+                )
