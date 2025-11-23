@@ -4,7 +4,7 @@
   "repository": "https://github.com/yourusername/anime-telegram-bot",
   "logo": "https://telegra.ph/file/abcd1234efgh5678.png",
   "keywords": ["telegram", "bot", "anime", "pyrogram", "mongodb"],
-  "stack": "heroku-20",
+  "stack": "heroku-24",
   "env": {
     "BOT_TOKEN": {
       "description": "Your Telegram bot token",
