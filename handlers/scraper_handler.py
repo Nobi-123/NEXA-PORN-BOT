@@ -5,37 +5,48 @@ from config import SOURCE_CHANNELS
 from utils.logger import log_event
 
 def register_scraper(app):
-    @app.on_message(filters.chat(list(SOURCE_CHANNELS.keys())) & filters.video)
+    @app.on_message(filters.chat(list(SOURCE_CHANNELS.keys())) & (filters.video | filters.document))
     async def index_channel_post(client, message: Message):
         """
-        Triggered when a new video is posted in one of the source channels.
-        Saves the video in the 'videos' collection if not already indexed.
+        Triggered when a new video or document is posted in a source channel.
+        Saves the file in the 'videos' collection if not already indexed.
         """
 
-        # Determine category from channel
+        # Determine category from SOURCE_CHANNELS
         chat_id = str(message.chat.id)
-        category = SOURCE_CHANNELS.get(chat_id)
-        if not category:
-            # fallback if somehow chat_id is missing
-            category = "unknown"
+        category = SOURCE_CHANNELS.get(chat_id, "unknown")
 
-        # Extract video details
-        file_id = message.video.file_id
-        title = message.caption or ''
+        # Determine file_id
+        file_id = None
+        if message.video:
+            file_id = message.video.file_id
+        elif message.document:
+            file_id = message.document.file_id
+
+        if not file_id:
+            await log_event(f"❌ No valid video/document in message {message.message_id} from {chat_id}", client)
+            return
 
         # Avoid duplicates
-        exists = videos.find_one({"source_id": message.chat.id, "message_id": message.message_id})
-        if not exists:
+        exists = videos.find_one({"source_id": chat_id, "message_id": message.message_id})
+        if exists:
+            return
+
+        try:
+            # Save to MongoDB
             videos.insert_one({
                 "file_id": file_id,
                 "category": category,
-                "title": title,
-                "source_id": message.chat.id,
+                "title": message.caption or "",
+                "source_id": chat_id,
                 "message_id": message.message_id,
                 "added_at": message.date
             })
-            # Async logger must be awaited
+
             await log_event(
-                f"Indexed video from channel {message.chat.id} (msg {message.message_id}) -> category: {category}",
+                f"✅ Indexed video from channel {chat_id} (msg {message.message_id}) -> category: {category}",
                 client
             )
+
+        except Exception as e:
+            await log_event(f"❌ Failed to save video {message.message_id} from {chat_id}: {e}", client)
