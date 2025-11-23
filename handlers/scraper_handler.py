@@ -5,21 +5,27 @@ from config import SOURCE_CHANNELS
 from utils.logger import log_event
 
 def register_scraper(app):
+
+    # convert string IDs to integers
+    channel_ids = [int(x) for x in SOURCE_CHANNELS.keys()]
+
     @app.on_message(
-        filters.chat(list(SOURCE_CHANNELS.keys())) &
+        filters.chat(channel_ids) &
         (filters.video | filters.document)
     )
     async def index_media_channel(client, message: Message):
 
-        file_id = message.video.file_id if message.video else message.document.file_id
+        file_id = (
+            message.video.file_id
+            if message.video
+            else message.document.file_id
+        )
         if not file_id:
             return
 
-        # avoid duplicates
         if videos.find_one({"message_id": message.message_id}):
             return
 
-        # auto-detect correct category based on channel ID
         category = SOURCE_CHANNELS.get(str(message.chat.id), "unknown")
 
         videos.insert_one({
@@ -31,4 +37,7 @@ def register_scraper(app):
             "added_at": message.date
         })
 
-        await log_event(f"Indexed video in category {category}", client)
+        await log_event(
+            f"Indexed video in category {category}",
+            client
+        )
