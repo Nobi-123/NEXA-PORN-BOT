@@ -6,8 +6,8 @@ from utils.logger import log_event
 
 def register_scraper(app):
 
-    # convert string IDs to integers
-    channel_ids = [int(x) for x in SOURCE_CHANNELS.keys()]
+    # use channel usernames / IDs exactly as given 
+    channel_ids = list(SOURCE_CHANNELS.keys())
 
     @app.on_message(
         filters.chat(channel_ids) &
@@ -23,6 +23,7 @@ def register_scraper(app):
         if not file_id:
             return
 
+        # avoid duplicates
         if videos.find_one({"message_id": message.message_id}):
             return
 
