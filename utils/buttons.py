@@ -11,18 +11,18 @@ def main_keyboard():
 
 def category_keyboard():
     kb = []
-    for code, cat in SOURCE_CHANNELS.items():
-        if not code:
+    for username, cat in SOURCE_CHANNELS.items():
+        if not username:
             continue
         kb.append([InlineKeyboardButton(f"🎥 {cat.title()}", callback_data=f"cat_{cat}")])
     kb.append([InlineKeyboardButton("🔀 Random", callback_data="cat_random")])
     return InlineKeyboardMarkup(kb)
 
-def join_buttons():
+def join_buttons(channels):
+    """Create join buttons dynamically."""
     kb = []
-    for ch in SOURCE_CHANNELS.keys():
-        if not ch:
-            continue
-        kb.append([InlineKeyboardButton("Join Channel ✅", url=f"https://t.me/{ch}")])
+    for ch in channels:
+        ch_username = ch.lstrip("@")
+        kb.append([InlineKeyboardButton(f"Join {ch_username} ✅", url=f"https://t.me/{ch_username}")])
     kb.append([InlineKeyboardButton("I Joined ✅", callback_data="recheck_join")])
     return InlineKeyboardMarkup(kb)
