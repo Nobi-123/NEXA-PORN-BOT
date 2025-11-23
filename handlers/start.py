@@ -5,15 +5,15 @@ from database import users, referrals
 from utils.fsub import check_sub
 from utils.buttons import main_keyboard, join_buttons
 from utils.logger import log_event
-from config import FORCE_CHANNELS, REFERRAL_BONUS, START_TEXT, START_IMAGE
+from config import FORCE_CHANNELS, START_TEXT, START_IMAGE, REFERRAL_BONUS
 
 def register_start(app):
     @app.on_message(filters.private & filters.command("start"))
     async def start_handler(client, message: Message):
-        args = message.text.split()
         user = message.from_user
+        args = message.text.split()
 
-        # ---------------- Create user ----------------
+        # Create user
         if not users.find_one({"_id": user.id}):
             code = secrets.token_urlsafe(8)
             users.insert_one({
@@ -24,21 +24,20 @@ def register_start(app):
                 "referral_code": code,
                 "bonus": 0
             })
-            # Async logger
             await log_event(f"New user started: {user.id} ({user.username})", client)
 
-        # ---------------- Referral logic ----------------
+        # Referral
         if len(args) > 1 and args[1].startswith("ref_"):
-            ref = args[1][4:]
-            referrer = users.find_one({"referral_code": ref})
-            if referrer and referrer["_id"] != user.id:
+            ref_code = args[1][4:]
+            ref_user = users.find_one({"referral_code": ref_code})
+            if ref_user and ref_user["_id"] != user.id:
                 referrals.insert_one({
-                    "referrer_id": referrer["_id"],
+                    "referrer_id": ref_user["_id"],
                     "referred_id": user.id,
                     "credited": False
                 })
 
-        # ---------------- Force join check ----------------
+        # Force join
         sub = await check_sub(client, user.id, FORCE_CHANNELS)
         if sub is not True:
             await message.reply(
@@ -47,23 +46,16 @@ def register_start(app):
             )
             return
 
-        # ---------------- Send welcome image ----------------
+        # Send welcome
         try:
             await client.send_photo(
                 chat_id=user.id,
-                photo=START_IMAGE,  # URL or file_id
-                caption=START_TEXT.format(
-                    first_name=user.first_name,
-                    username=user.username
-                ),
+                photo=START_IMAGE,
+                caption=START_TEXT.format(first_name=user.first_name, username=user.username),
                 reply_markup=main_keyboard()
             )
-        except Exception:
-            # Fallback to text only
+        except:
             await message.reply(
-                START_TEXT.format(
-                    first_name=user.first_name,
-                    username=user.username
-                ),
+                START_TEXT.format(first_name=user.first_name, username=user.username),
                 reply_markup=main_keyboard()
             )
