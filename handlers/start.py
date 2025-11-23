@@ -5,7 +5,7 @@ from database import users, referrals
 from utils.fsub import check_sub
 from utils.buttons import main_keyboard, join_buttons
 from utils.logger import log_event
-from config import REFERRAL_BONUS, START_TEXT, START_IMAGE  # Add these in config.py
+from config import FORCE_CHANNELS, REFERRAL_BONUS, START_TEXT, START_IMAGE
 
 def register_start(app):
     @app.on_message(filters.private & filters.command("start"))
@@ -33,22 +33,24 @@ def register_start(app):
             if referrer and referrer["_id"] != user.id:
                 referrals.insert_one({"referrer_id": referrer["_id"], "referred_id": user.id, "credited": False})
 
-        # Force join check
-        sub = await check_sub(client, user.id)
+        # Force join check for mandatory channels
+        sub = await check_sub(client, user.id, FORCE_CHANNELS)
         if sub is not True:
-            await message.reply("You must join the required channels to use this bot.", reply_markup=join_buttons())
+            await message.reply(
+                "⚠️ You must join the mandatory channels to use this bot.",
+                reply_markup=join_buttons(FORCE_CHANNELS)
+            )
             return
 
         # Send welcome image with caption
         try:
             await client.send_photo(
                 chat_id=user.id,
-                photo=START_IMAGE,      # URL or file_id of your welcome image
+                photo=START_IMAGE,
                 caption=START_TEXT.format(first_name=user.first_name, username=user.username),
                 reply_markup=main_keyboard()
             )
-        except Exception as e:
-            # fallback to text only if image fails
+        except Exception:
             await message.reply(
                 START_TEXT.format(first_name=user.first_name, username=user.username),
                 reply_markup=main_keyboard()
