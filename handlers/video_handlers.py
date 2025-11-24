@@ -4,7 +4,6 @@ from utils.buttons import category_keyboard
 from utils.limiter import get_remaining, consume
 from utils.logger import log_event
 
-# Fixed category → channel mapping
 CATEGORY_CHANNELS = {
     "japanese": -1003494008640,
     "hentai": -1003230238714,
@@ -20,7 +19,6 @@ def register_video(app):
         data = callback.data
         uid = callback.from_user.id
 
-        # 1) Categories Menu
         if data == "menu_categories":
             await callback.message.reply_text(
                 "🎬 Choose a category:",
@@ -29,7 +27,6 @@ def register_video(app):
             await callback.answer()
             return
 
-        # 2) Category Selected
         if data.startswith("cat_"):
             category = data.split("_")[1].lower()
 
@@ -39,13 +36,11 @@ def register_video(app):
 
             channel_id = CATEGORY_CHANNELS[category]
 
-            # Check daily limit
             remaining, bonus, watched_count = get_remaining(uid)
             if remaining <= 0:
                 await callback.answer("⚠️ You reached your daily limit.", show_alert=True)
                 return
 
-            # Fetch a random video from the channel
             try:
                 async for msg in client.get_chat_history(channel_id, limit=50):
                     if msg.video:
@@ -59,20 +54,18 @@ def register_video(app):
                 await log_event(f"Failed to fetch from channel {channel_id}: {e}", client)
                 return
 
-            # Consume limit
             ok, mode = consume(uid, str(video_msg.id))
             if not ok:
                 await callback.answer("⚠️ Could not consume quota.", show_alert=True)
                 return
 
-            # Sending video
             try:
                 await callback.answer("📤 Sending video...")
 
-                await client.forward_messages(
+                await client.copy_message(
                     chat_id=uid,
                     from_chat_id=channel_id,
-                    message_ids=video_msg.id
+                    message_id=video_msg.id
                 )
 
                 await log_event(
@@ -83,7 +76,7 @@ def register_video(app):
             except Exception as e:
                 await callback.answer("⚠️ Failed to send video.", show_alert=True)
                 await log_event(
-                    f"Forwarding failed for user {uid}: {e}",
+                    f"Copying failed for user {uid}: {e}",
                     client
                 )
                 return
