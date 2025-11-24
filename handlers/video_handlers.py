@@ -6,19 +6,27 @@ from utils.limiter import get_remaining, consume
 from utils.logger import log_event
 
 def register_video(app):
+
     @app.on_callback_query()
     async def callback_router(client, callback: CallbackQuery):
         data = callback.data
         uid = callback.from_user.id
 
         if data == "menu_categories":
-            await callback.message.reply_text("🎬 Choose a category:", reply_markup=category_keyboard())
+            await callback.message.reply_text(
+                "🎬 Choose a category:",
+                reply_markup=category_keyboard()
+            )
             await callback.answer()
             return
 
         if data.startswith("cat_"):
             category = data.split("_")[1].lower()
-            doc = videos.aggregate([{"$match": {"category": category}}, {"$sample": {"size": 1}}])
+
+            doc = videos.aggregate([
+                {"$match": {"category": category}},
+                {"$sample": {"size": 1}}
+            ])
 
             try:
                 video = next(doc)
@@ -37,9 +45,22 @@ def register_video(app):
                 return
 
             try:
-                await callback.answer("✅ Sending video...")
-                await client.send_video(chat_id=uid, video=video["file_id"], caption=video.get("title",""))
-                await log_event(f"User {uid} watched video {video['_id']} ({category})", client)
+                await callback.answer("📤 Sending video...")
+
+                await client.send_video(
+                    chat_id=uid,
+                    video=video["file_id"],
+                    caption=video.get("title", "")
+                )
+
+                await log_event(
+                    f"User {uid} watched video {video['_id']} ({category})",
+                    client
+                )
+
             except Exception as e:
                 await callback.answer("⚠️ Failed to send video.", show_alert=True)
-                await log_event(f"Failed to send video {video['_id']} to {uid}: {e}", client)
+                await log_event(
+                    f"Failed to send video {video['_id']} to {uid}: {e}",
+                    client
+                )
